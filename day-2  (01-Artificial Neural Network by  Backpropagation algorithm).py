@@ -1,71 +1,55 @@
 import numpy as np
 
-class NeuralNetwork:
-    def __init__(self, input_size, hidden_size, output_size):
-        self.input_size = input_size
-        self.hidden_size = hidden_size
-        self.output_size = output_size
+X = np.array(([2, 9], [1, 5], [3, 6]), dtype=float)
+y = np.array(([92], [86], [89]), dtype=float)
+X = X/np.amax(X,axis=0) 
+y = y/100
+
+def sigmoid (x):
+    return 1/(1 + np.exp(-x))
+
+def derivatives_sigmoid(x):
+    return x * (1 - x)
+
+epoch=5 
+lr=0.1 
+
+inputlayer_neurons = 2 
+hiddenlayer_neurons = 3 
+output_neurons = 1 
+
+
+wh=np.random.uniform(size=(inputlayer_neurons,hiddenlayer_neurons))
+bh=np.random.uniform(size=(1,hiddenlayer_neurons))
+wout=np.random.uniform(size=(hiddenlayer_neurons,output_neurons))
+bout=np.random.uniform(size=(1,output_neurons))
+
+for i in range(epoch):
+    #Forward Propogation
+    hinp1=np.dot(X,wh)
+    hinp=hinp1 + bh
+    hlayer_act = sigmoid(hinp)
+    outinp1=np.dot(hlayer_act,wout)
+    outinp= outinp1+bout
+    output = sigmoid(outinp)
+    
+    #Backpropagation
+    EO = y-output
+    outgrad = derivatives_sigmoid(output)
+    d_output = EO * outgrad
+    EH = d_output.dot(wout.T)
+    hiddengrad = derivatives_sigmoid(hlayer_act)
+    d_hiddenlayer = EH * hiddengrad
+    
+    wout += hlayer_act.T.dot(d_output) *lr   
+    wh += X.T.dot(d_hiddenlayer) *lr
+    
+    print ("-----------Epoch-", i+1, "Starts----------")
+    print("Input: \n" + str(X)) 
+    print("Actual Output: \n" + str(y))
+    print("Predicted Output: \n" ,output)
+    print ("-----------Epoch-", i+1, "Ends----------\n")
         
-        # Initialize weights and biases
-        self.weights_input_hidden = np.random.randn(self.input_size, self.hidden_size)
-        self.bias_input_hidden = np.random.randn(1, self.hidden_size)
-        self.weights_hidden_output = np.random.randn(self.hidden_size, self.output_size)
-        self.bias_hidden_output = np.random.randn(1, self.output_size)
-        
-    def sigmoid(self, x):
-        return 1 / (1 + np.exp(-x))
-    
-    def sigmoid_derivative(self, x):
-        return x * (1 - x)
-    
-    def forward(self, X):
-        # Forward pass through the network
-        self.hidden_input = np.dot(X, self.weights_input_hidden) + self.bias_input_hidden
-        self.hidden_output = self.sigmoid(self.hidden_input)
-        self.output = np.dot(self.hidden_output, self.weights_hidden_output) + self.bias_hidden_output
-        return self.output
-    
-    def backward(self, X, y, output, learning_rate):
-        # Backpropagation
-        error = y - output
-        d_output = error
-        d_hidden_output = np.dot(d_output, self.weights_hidden_output.T)
-        d_hidden_input = d_hidden_output * self.sigmoid_derivative(self.hidden_output)
-        
-        # Update weights and biases
-        self.weights_hidden_output += learning_rate * np.dot(self.hidden_output.T, d_output)
-        self.bias_hidden_output += learning_rate * np.sum(d_output, axis=0, keepdims=True)
-        self.weights_input_hidden += learning_rate * np.dot(X.T, d_hidden_input)
-        self.bias_input_hidden += learning_rate * np.sum(d_hidden_input, axis=0, keepdims=True)
-    
-    def train(self, X, y, epochs, learning_rate):
-        for epoch in range(epochs):
-            output = self.forward(X)
-            self.backward(X, y, output, learning_rate)
-            if epoch % 1000 == 0:
-                loss = np.mean(np.square(y - output))
-                print(f'Epoch {epoch}, Loss: {loss:.4f}')
-
-# Example usage:
-# Let's use a simple dataset for demonstration
-X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
-y = np.array([[0], [1], [1], [0]])
-
-# Define the neural network
-input_size = 2
-hidden_size = 3
-output_size = 1
-learning_rate = 0.1
-epochs = 10000
-
-# Initialize and train the neural network
-nn = NeuralNetwork(input_size, hidden_size, output_size)
-nn.train(X, y, epochs, learning_rate)
-
-# Test the trained network
-print("\nTesting the trained network:")
-for i in range(len(X)):
-    input_data = X[i]
-    true_output = y[i]
-    predicted_output = nn.forward(input_data)
-    print(f"Input: {input_data}, True Output: {true_output}, Predicted Output: {predicted_output}")
+print("Input: \n" + str(X)) 
+print("Actual Output: \n" + str(y))
+print("Predicted Output: \n" ,output)
