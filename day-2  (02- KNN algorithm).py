@@ -1,35 +1,22 @@
 import numpy as np
-from collections import Counter
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, classification_report
 
-class KNN:
-    def __init__(self, k=3):
-        self.k = k
+iris = load_iris()
+X = iris.data
+y = iris.target
 
-    def fit(self, X, y):
-        self.X_train = X
-        self.y_train = y
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    def predict(self, X):
-        predictions = [self._predict(x) for x in X]
-        return np.array(predictions)
-
-    def _predict(self, x):
-        distances = [np.linalg.norm(x - x_train) for x_train in self.X_train]
-        k_indices = np.argsort(distances)[:self.k]
-        k_nearest_labels = [self.y_train[i] for i in k_indices]
-        most_common = Counter(k_nearest_labels).most_common(1)
-        return most_common[0][0]
-
-# Example usage:
-# Let's use a simple dataset for demonstration
-X_train = np.array([[1, 2], [2, 3], [3, 4], [4, 5]])
-y_train = np.array([0, 0, 1, 1])
-
-# Initialize and train the KNN classifier
-knn = KNN(k=3)
+k = 5 
+knn = KNeighborsClassifier(n_neighbors=k)
 knn.fit(X_train, y_train)
 
-# Test the classifier with some sample data
-X_test = np.array([[5, 6], [1, 1]])
-predictions = knn.predict(X_test)
-print("Predictions:", predictions)
+y_pred = knn.predict(X_test)
+
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
+print("Classification Report:")
+print(classification_report(y_test, y_pred))
